@@ -71,6 +71,13 @@ function setupEventListeners() {
       planRoute(start, finish);
     });
   });
+
+  window.addEventListener("resize", () => {
+    map.invalidateSize();
+    if (routeLayer) {
+      map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
+    }
+  });
 }
 
 function setBtnLoading(loading) {
@@ -138,7 +145,7 @@ function renderRoute(data) {
   animateCounter("totalDistance", data.total_distance_miles);
   animateCounter("totalCost", data.total_fuel_cost_usd, "$");
   animateCounter("gallonsUsed", data.gallons_used);
-  animateCounter("stopsCount", data.fuel_stops.length);
+  animateCounter("stopsCount", data.fuel_stops.length, "", 0);
 
   // Clear previous map layers
   if (routeLayer) {
@@ -148,7 +155,7 @@ function renderRoute(data) {
   markersMap = {};
 
   // Render GeoJSON Route
-  if (data.route_geometry && data.route_geometry.coordinates) {
+  if (data.route_geometry && data.route_geometry.coordinates && data.route_geometry.coordinates.length > 0) {
     // Leaflet GeoJSON expects coordinates in [lon, lat] format
     routeLayer = L.geoJSON(data.route_geometry, {
       style: {
@@ -160,23 +167,22 @@ function renderRoute(data) {
       },
     }).addTo(map);
 
-    // Fit map bounds
-    map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
-
     // Add Start and Destination markers
     const coords = data.route_geometry.coordinates;
-    if (coords.length > 0) {
-      const startCoord = [coords[0][1], coords[0][0]];
-      const finishCoord = [coords[coords.length - 1][1], coords[coords.length - 1][0]];
+    const startCoord = [coords[0][1], coords[0][0]];
+    const finishCoord = [coords[coords.length - 1][1], coords[coords.length - 1][0]];
 
-      L.marker(startCoord, {
-        icon: createPinIcon("#10b981", "S"),
-      }).bindPopup(`<strong>Origin:</strong> ${data.start_location}`).addTo(markersLayer);
+    L.marker(startCoord, {
+      icon: createPinIcon("#10b981", "S"),
+    }).bindPopup(`<strong>Origin:</strong> ${data.start_location}`).addTo(markersLayer);
 
-      L.marker(finishCoord, {
-        icon: createPinIcon("#f43f5e", "F"),
-      }).bindPopup(`<strong>Destination:</strong> ${data.finish_location}`).addTo(markersLayer);
-    }
+    L.marker(finishCoord, {
+      icon: createPinIcon("#f43f5e", "F"),
+    }).bindPopup(`<strong>Destination:</strong> ${data.finish_location}`).addTo(markersLayer);
+
+    // Fit map bounds on the route geometry
+    map.invalidateSize();
+    map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
   }
 
   // Render Fuel Stop Markers
@@ -208,6 +214,14 @@ function renderRoute(data) {
 
   // Render Itinerary Timeline
   renderTimeline(data.fuel_stops);
+
+  // Sync map size and re-fit bounds after DOM timeline cards render
+  requestAnimationFrame(() => {
+    map.invalidateSize();
+    if (routeLayer) {
+      map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
+    }
+  });
 }
 
 function renderTimeline(fuelStops) {
@@ -306,12 +320,13 @@ function createFuelIcon(stopNumber) {
 }
 
 // Number animation helper
-function animateCounter(id, targetValue, prefix = "") {
+function animateCounter(id, targetValue, prefix = "", decimals = null) {
   const el = document.getElementById(id);
   if (!el) return;
   const start = 0;
   const duration = 800;
   const startTime = performance.now();
+  const fracDigits = decimals !== null ? decimals : (prefix ? 2 : 1);
 
   function update(currentTime) {
     const elapsed = currentTime - startTime;
@@ -319,8 +334,8 @@ function animateCounter(id, targetValue, prefix = "") {
     const easeProgress = 1 - Math.pow(1 - progress, 3); // Ease out cubic
     const current = start + (targetValue - start) * easeProgress;
     el.textContent = `${prefix}${current.toLocaleString(undefined, {
-      minimumFractionDigits: prefix ? 2 : 1,
-      maximumFractionDigits: prefix ? 2 : 1,
+      minimumFractionDigits: fracDigits,
+      maximumFractionDigits: fracDigits,
     })}`;
 
     if (progress < 1) {

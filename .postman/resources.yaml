@@ -1,0 +1,14 @@
+# Use this workspace to collaborate
+workspace:
+  id: 21e29210-a421-4e8a-8e6b-e00746bca7b2
+
+localResources:
+  collections:
+    - ../Spotter Fuel Route API
+    - ../spotter-fuel-api/Spotter Fuel Route API
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  collections:
+    ../spotter-fuel-api/Spotter Fuel Route API: c545d302-d14c-46d6-97fb-62a9206a7385

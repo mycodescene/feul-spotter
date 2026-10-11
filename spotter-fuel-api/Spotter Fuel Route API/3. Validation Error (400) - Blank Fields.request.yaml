@@ -1,0 +1,14 @@
+$kind: http-request
+description: Blank fields return HTTP 400 with serializer errors.
+url: http://127.0.0.1:8000/api/route/
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "start_location": "   ",
+      "finish_location": ""
+    }
+order: 3000

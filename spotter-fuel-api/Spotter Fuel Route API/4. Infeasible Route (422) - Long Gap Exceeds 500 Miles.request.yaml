@@ -1,0 +1,14 @@
+$kind: http-request
+description: Impossible driving route or gap exceeding 500 miles returns HTTP 422 with clean error message.
+url: http://127.0.0.1:8000/api/route/
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "start_location": "Honolulu, HI",
+      "finish_location": "Miami, FL"
+    }
+order: 4000

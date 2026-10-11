@@ -1,0 +1,13 @@
+$kind: http-request
+description: Omission of finish_location returns HTTP 400 with field validation error.
+url: http://127.0.0.1:8000/api/route/
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "start_location": "Denver, CO"
+    }
+order: 2000

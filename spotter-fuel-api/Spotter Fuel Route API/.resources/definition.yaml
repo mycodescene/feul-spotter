@@ -1,0 +1,4 @@
+$kind: collection
+description: |-
+  Postman collection for Spotter Backend Django Engineer Assessment.
+  Includes Happy Path, 400 Validation Error, and 422 Infeasible Route Error tests.

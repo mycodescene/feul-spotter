@@ -544,6 +544,12 @@ body {
   cursor: pointer !important;
 }
 
+.custom-pin,
+.custom-fuel-pin {
+  background: transparent !important;
+  border: none !important;
+}
+
 /* Animations */
 @keyframes floatSubtle {
   0%, 100% { transform: translateY(0); }

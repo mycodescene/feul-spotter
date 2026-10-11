@@ -1,0 +1,14 @@
+$kind: http-request
+description: Standard USA road trip request calculating optimal fuel stops along the route.
+url: http://127.0.0.1:8000/api/route/
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "start_location": "Denver, CO",
+      "finish_location": "Dallas, TX"
+    }
+order: 1000
