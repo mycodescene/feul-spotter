@@ -1,0 +1,146 @@
+{
+  "info": {
+    "_postman_id": "c545d302-d14c-46d6-97fb-62a9206a7385",
+    "name": "Spotter Fuel Route API",
+    "description": "Postman collection for Spotter Backend Django Engineer Assessment.\nIncludes Happy Path, 400 Validation Error, and 422 Infeasible Route Error tests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Happy Path - Denver, CO to Dallas, TX",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"start_location\": \"Denver, CO\",\n  \"finish_location\": \"Dallas, TX\"\n}"
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/route/",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "route",
+            ""
+          ]
+        },
+        "description": "Standard USA road trip request calculating optimal fuel stops along the route."
+      },
+      "response": []
+    },
+    {
+      "name": "2. Validation Error (400) - Missing Field",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"start_location\": \"Denver, CO\"\n}"
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/route/",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "route",
+            ""
+          ]
+        },
+        "description": "Omission of finish_location returns HTTP 400 with field validation error."
+      },
+      "response": []
+    },
+    {
+      "name": "3. Validation Error (400) - Blank Fields",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"start_location\": \"   \",\n  \"finish_location\": \"\"\n}"
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/route/",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "route",
+            ""
+          ]
+        },
+        "description": "Blank fields return HTTP 400 with serializer errors."
+      },
+      "response": []
+    },
+    {
+      "name": "4. Infeasible Route (422) - Long Gap Exceeds 500 Miles",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"start_location\": \"Honolulu, HI\",\n  \"finish_location\": \"Miami, FL\"\n}"
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/route/",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "route",
+            ""
+          ]
+        },
+        "description": "Impossible driving route or gap exceeding 500 miles returns HTTP 422 with clean error message."
+      },
+      "response": []
+    }
+  ]
+}

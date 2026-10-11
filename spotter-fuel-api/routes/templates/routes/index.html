@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spotter Fuel Route Optimizer — Cost-Optimal Trip Planning</title>
+  <meta name="description" content="Calculates cost-optimal fuel stops for USA driving routes using greedy optimization, real OPIS fuel prices, OSRM routing, and Nominatim geocoding.">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <!-- App Custom Styles -->
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'routes/css/style.css' %}">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <div>
+        <h1 class="brand-title">Spotter Fuel Optimizer</h1>
+      </div>
+      <span class="brand-badge">500mi Range • 10 MPG</span>
+    </div>
+    <nav class="nav-links">
+      <a href="/api/route/" target="_blank" class="nav-link">REST API Endpoint</a>
+      <span style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: #10b981; font-weight: 600;">
+        <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981;"></span>
+        OSRM & Nominatim Online
+      </span>
+    </nav>
+  </header>
+
+  <!-- Main Application Body -->
+  <main class="main-container">
+    <!-- Left Sidebar: Planner & Trip Summary -->
+    <aside class="sidebar">
+      <!-- Route Form Card -->
+      <section class="glass-panel">
+        <h2 class="panel-title">Trip Planner</h2>
+        <p class="panel-subtitle">Find the cheapest fuel stops across any USA highway corridor</p>
+
+        <form id="routeForm">
+          <div class="form-group">
+            <label for="startLocation" class="form-label">Start Location</label>
+            <div class="input-wrapper">
+              <span class="input-icon">📍</span>
+              <input type="text" id="startLocation" class="form-control" placeholder="e.g. Denver, CO" value="Denver, CO" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="finishLocation" class="form-label">Finish Location</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🏁</span>
+              <input type="text" id="finishLocation" class="form-control" placeholder="e.g. Dallas, TX" value="Dallas, TX" required>
+            </div>
+          </div>
+
+          <!-- Quick Route Presets -->
+          <div class="presets-container">
+            <div class="presets-label">Popular Freight Routes</div>
+            <div class="preset-chips">
+              <button type="button" class="preset-chip" data-start="Denver, CO" data-finish="Dallas, TX">Denver → Dallas</button>
+              <button type="button" class="preset-chip" data-start="Chicago, IL" data-finish="Atlanta, GA">Chicago → Atlanta</button>
+              <button type="button" class="preset-chip" data-start="Dallas, TX" data-finish="Houston, TX">Dallas → Houston</button>
+            </div>
+          </div>
+
+          <button type="submit" id="planBtn" class="btn-primary">
+            <span id="btnSpinner" class="spinner"></span>
+            <span id="btnText">Optimize Fuel Stops</span>
+          </button>
+
+          <div id="errorAlert" class="alert-box"></div>
+        </form>
+      </section>
+
+      <!-- Trip Metrics Card -->
+      <section class="glass-panel">
+        <h2 class="panel-title">Trip Overview</h2>
+        
+        <div class="kpi-grid">
+          <div class="kpi-card kpi-distance">
+            <div class="kpi-title">Total Distance</div>
+            <div class="kpi-value"><span id="totalDistance">0.0</span><span class="kpi-unit">mi</span></div>
+          </div>
+
+          <div class="kpi-card kpi-cost">
+            <div class="kpi-title">Total Fuel Cost</div>
+            <div class="kpi-value"><span id="totalCost">$0.00</span></div>
+          </div>
+
+          <div class="kpi-card kpi-gallons">
+            <div class="kpi-title">Fuel Consumed</div>
+            <div class="kpi-value"><span id="gallonsUsed">0.0</span><span class="kpi-unit">gal</span></div>
+          </div>
+
+          <div class="kpi-card kpi-stops">
+            <div class="kpi-title">Planned Stops</div>
+            <div class="kpi-value"><span id="stopsCount">0</span><span class="kpi-unit">stops</span></div>
+          </div>
+        </div>
+
+        <h3 style="font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700; margin-bottom: 0.75rem;">
+          Fuel Stops Itinerary
+        </h3>
+        <div id="timelineContainer" class="timeline-container">
+          <!-- Populated dynamically via app.js -->
+        </div>
+      </section>
+    </aside>
+
+    <!-- Right Side: Interactive Leaflet Map -->
+    <section class="map-container">
+      <div class="map-badge-overlay">
+        <span class="map-badge-dot"></span>
+        <span class="map-badge-text">1 OSRM Call • Nominatim Geocoder • 100% Free & Keyless</span>
+      </div>
+      <div id="map"></div>
+    </section>
+  </main>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- App JS -->
+  <script src="{% static 'routes/js/app.js' %}"></script>
+</body>
+</html>
