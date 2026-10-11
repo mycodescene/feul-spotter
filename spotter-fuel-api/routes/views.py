@@ -90,11 +90,35 @@ class RoutePlanView(APIView):
                 start_name=start_loc,
                 finish_name=finish_loc,
             )
-        except InfeasibleRouteError as e:
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            )
+        except InfeasibleRouteError as initial_err:
+            # If standard detour (10 mi) leaves a gap > 500 mi due to sparse regional coverage,
+            # adaptively expand detour tolerance (up to 120 mi) along the travel corridor
+            fallback_plan = None
+            for expanded_detour in [25.0, 50.0, 75.0, 100.0, 120.0]:
+                expanded_projected = project_stations_onto_route(
+                    coordinates=route_res.coordinates,
+                    stations=geocoded_stations,
+                    max_detour_miles=expanded_detour,
+                    total_route_distance_miles=route_res.total_distance_miles,
+                )
+                try:
+                    fallback_plan = plan_fuel_stops(
+                        total_distance_miles=route_res.total_distance_miles,
+                        projected_stations=expanded_projected,
+                        start_name=start_loc,
+                        finish_name=finish_loc,
+                    )
+                    break
+                except InfeasibleRouteError:
+                    continue
+
+            if fallback_plan is not None:
+                fuel_plan = fallback_plan
+            else:
+                return Response(
+                    {"error": str(initial_err)},
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
         except Exception as e:
             logger.error(f"Error computing fuel plan: {e}", exc_info=True)
             return Response(
