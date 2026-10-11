@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 USER_AGENT = "spotter-fuel-api-assessment"
 RATE_LIMIT_DELAY = 1.0  # Respect Nominatim 1 req/sec policy
+NON_US_STATES = {"AB", "BC", "MB", "NB", "NS", "ON", "QC", "SK", "YT"}
 
 
 class Command(BaseCommand):
@@ -59,11 +60,12 @@ class Command(BaseCommand):
         all_pairs = get_unique_city_states_from_csv()
         self.stdout.write(f"Total unique City/State pairs in CSV: {len(all_pairs)}")
 
-        # Find pairs needing geocoding
+        # Find pairs needing geocoding (skip non-US states since assessment is USA-only)
         pending_pairs = [
             (c, s)
             for c, s in all_pairs
-            if normalize_city_state(c, s) not in existing_coords
+            if s.strip().upper() not in NON_US_STATES
+            and normalize_city_state(c, s) not in existing_coords
         ]
 
         self.stdout.write(f"Pairs remaining to geocode: {len(pending_pairs)}")
@@ -83,14 +85,15 @@ class Command(BaseCommand):
         successful = 0
         failed = 0
         coords_map = dict(existing_coords)
-        canadian_provinces = {"AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT"}
 
         try:
             for idx, (city, state) in enumerate(pending_pairs, start=1):
-                norm_key = normalize_city_state(city, state)
                 state_upper = state.strip().upper()
-                country = "Canada" if state_upper in canadian_provinces else "USA"
-                query = f"{city}, {state}, {country}"
+                if state_upper in NON_US_STATES:
+                    continue
+
+                norm_key = normalize_city_state(city, state)
+                query = f"{city}, {state}, USA"
                 self.stdout.write(f"[{idx}/{len(pending_pairs)}] Geocoding '{query}'...", ending="")
 
                 try:
